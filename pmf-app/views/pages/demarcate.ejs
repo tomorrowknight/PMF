@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <% include ../partials/head %>
+	<% include ../partials/scripts %>
+	<% include ../partials/nav %>
+	
+	<nav class="navbar">
+	</nav>
+
+    <body>
+	
+		<h4>Demarcate areas of interest </h4>
+		<input id="pac-input" class="controls" type="text" placeholder="Search Box">
+		<div id="map"></div>
+		
+		<br>
+		
+		<div id="form_div">
+		<form action="fenceData" method="POST">
+		  Area Name:<br>
+		  <input type="text" name="areaName"><br>
+		  Area Address:<br>
+		  <input type="text" name="areaAddr"><br>
+		  <br>
+		  Area Postal:<br>
+		  <input type="text" name="areaPostal"><br>
+		  <br>
+		  <textarea id='poly' name='poly' readonly></textarea>
+		  <button type="submit" class="btn btn-info">
+		  <br>
+		  
+		</form>
+		</div>
+
+        <% include ../partials/footer %>
+
+        
+
+    </body>
+	
+
+</html>

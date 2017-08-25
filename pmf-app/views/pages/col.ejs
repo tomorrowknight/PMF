@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <% include ../partials/head %>
+	<% include ../partials/scripts %>
+	<% include ../partials/nav %>
+	
+	<nav class="navbar">
+	<div class="container-fluid">
+    </div>
+	</nav>
+
+    <body>
+	<!--<div class=".container-fluid">
+		<div class="row">
+			<div class="col-sm-4 col-lg-6">
+			<h4>Areas where vehicle is stationary </h4>
+			<div class='chart-container' id='cc2'>
+			<canvas id="myChart2"></canvas>
+			</div>
+			<button type="button" class="btn btn-info" id='fenceBtn' onclick="getFences()">Show stationary areas</button>
+			</div>
+			<div class="col-sm-4 col-lg-6">
+			<h4>Move vs. Stationary </h4>
+			<div class="chart-container" id='cc1'>
+			<canvas id="myChart"></canvas>
+			</div>
+			<button type="button" class="btn btn-primary" id='idleBtn' onclick="idleTime()">Show Move vs. Stationary</button>
+			</div
+			<div class="col-sm-4">.col-sm-4</div>
+		</div>
+	</div>-->
+	
+	
+	
+	<div class="container-fluid">
+
+    <div class="row">
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Areas where vehicle is stationary
+          </div>
+		  	<div id="info" name="info">
+			</div>
+          <div class="chart-stage">
+			<div id="grid-1-1">
+				<canvas id="myChart2"></canvas>
+			</div>
+          </div>
+          <div class="chart-notes">
+			<div>
+            <button type="button" class="btn btn-success" id='fenceBtn' onclick="getFences()">Show stationary areas</button>
+			</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Move vs. Stationary
+          </div>
+          <div class="chart-stage">
+            <div id="grid-1-2">
+			<canvas id="myChart"></canvas>
+			</div>
+          </div>
+          <div class="chart-notes">
+            <button type="button" class="btn btn-primary" id='idleBtn' onclick="idleTime()">Show Move vs. Stationary</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Cell Title
+          </div>
+          <div class="chart-stage">
+            <img data-src="holder.js/100%x120/white">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+<!-- end of three -->
+
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Cell Title
+          </div>
+          <div class="chart-stage">
+            <img data-src="holder.js/100%x120/white">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Cell Title
+          </div>
+          <div class="chart-stage">
+            <img data-src="holder.js/100%x120/white">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Cell Title
+          </div>
+          <div class="chart-stage">
+            <img data-src="holder.js/100%x120/white">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+   
+
+    
+
+    </body>
+	<% include ../partials/footer %>
+
+</html>
