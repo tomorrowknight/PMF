@@ -3,41 +3,38 @@
 
     <% include ../partials/head %>
 	<% include ../partials/scripts %>
+	<% include ../partials/mapscript %>
 	<% include ../partials/nav %>
 	
-	<nav class="navbar">
-	</nav>
-
-    <body>
-	
-		<h4>Demarcate areas of interest </h4>
-		<input id="pac-input" class="controls" type="text" placeholder="Search Box">
+    <body class="demarcate-area">
+	<% include ../partials/sidenav %>
+	<div class="containerEx" id="bodyID">
+		<h3>Demarcate areas of interest </h3>
 		<div id="map"></div>
 		
-		<br>
-		
 		<div id="form_div">
-		<form action="fenceData" method="POST">
-		  Area Name:<br>
-		  <input type="text" name="areaName"><br>
-		  Area Address:<br>
-		  <input type="text" name="areaAddr"><br>
-		  <br>
-		  Area Postal:<br>
-		  <input type="text" name="areaPostal"><br>
-		  <br>
-		  <textarea id='poly' name='poly' readonly></textarea>
-		  <button type="submit" class="btn btn-info">
-		  <br>
-		  
+		<form action="fenceData" id="demcArea" method="POST">
+		  	Area Name:
+		  	<input type="text" class="form-control" name="areaName" required>
+		  	Area Address:
+		  	<input type="text" class="form-control" name="areaAddr">
+		  	Area Postal:
+		  	<input type="text" class="form-control"  name="areaPostal">
+		  	<textarea id='poly' name='poly' readonly ></textarea>
+			<br>
+			<select name="areaType" class="form-control" required>
+			  <option value="" disabled selected hidden>Areas</option>
+			  <option value="CU">Customer Location</option>
+			  <option value="PK">Parking Area</option>
+			  <option value="WH">Warehouse</option>
+			  
+		  </select>
 		</form>
+		<br>
+			 <button type="submit" class="btn btn-info btn-md" form="demcArea">Submit Info</button>
 		</div>
-
-        <% include ../partials/footer %>
-
-        
-
+	</div>
     </body>
+	<% include ../partials/footer %>
 	
-
 </html>

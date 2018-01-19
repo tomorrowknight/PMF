@@ -95,3 +95,11 @@ body.application .return-link:hover,
   font-size: 12px;
   padding: 8px 10px 5px;
 }
+
+.chart-notes-sm {
+  background: #fbfbfb;
+  border-top: 1px solid #e2e2e2;
+  color: #808080;
+  font-size: 11px;
+  padding: 8px 10px 5px;
+}
