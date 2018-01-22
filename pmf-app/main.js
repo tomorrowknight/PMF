@@ -79,7 +79,7 @@ app.use(function(req, res, next){
 /*     res.locals.success_messages = req.flash();
     res.locals.error_messages = req.flash('error_messages'); */
 	res.locals.err_msg = req.session.errMsg;
-	res.locals.err_verify = req.session.errVerify;
+	res.locals.err_type = req.session.errType;
     next();
 });
 
@@ -177,7 +177,7 @@ function wait(ms){
 //Remove after testing
 //removeLargeGaps("2017-07-04","2017-07-05","XD4626M","AW");
 
-var j = schedule.scheduleJob("*/1 * * * *", function(){
+var j = schedule.scheduleJob("*/3 * * * *", function(){
 	getFirstDate();
 	
 });
@@ -270,14 +270,32 @@ function updateProcessedDataTravelDistance(travelDistance,date,vehicle){
 	});
 }
 
-function removeDuplicateRows(){
+function checkDataReplication(date1,date2,vehicle,company,outputFileName){
+	var count = 0;
+	return new Promise(function(resolve, reject) {
+		connection.query('SELECT COUNT(*) AS count FROM `processed_data` WHERE `date` BETWEEN ? AND ? AND vehicle=? AND company=?', [date1,date2,vehicle,company], function (error, results, fields) {
+			if (error){
+				throw error;
+			}else{
+				count = results[0].count;
+				return resolve(count,outputFileName);
+			}
+		});
+
+	});	
+}
+
+function getDataReplication(count){
+	console.log(count);
+}
+/* function removeDuplicateRows(){
 	var sqlStmt = "CREATE TABLE temp_table LIKE node;ALTER TABLE temp_table ADD UNIQUE(datetime);INSERT IGNORE INTO temp_table SELECT * FROM node;RENAME TABLE node TO old_table, temp_table TO node;DROP TABLE old_table";
 	connection.query(sqlStmt, function(error, results, fields) {
 		if (error) {
 			throw error;
 		}
 	});
-}
+} */
 
 function storeProcessedAreas(date,vehicle,fenceData,company){
 	console.log("Store Proc Area COY CHK: " + company);
@@ -846,8 +864,9 @@ app.post('/uploadData', function (req, res) {
 		var fileExt = fileNameStr.split('.').pop();
 		console.log(fileExt);
 		if(fileExt!== "xlsx"){
-			//res.json({ message: errorWrongFile });
-			res.render('pages/upload');
+			errMsg = "File type error";
+			errType = "X";
+			res.redirect("/upload");			
 		}
 		var fullURL = initialURL + newAddr;
 		sampleFile.mv(fullURL, function(err) {
@@ -856,57 +875,77 @@ app.post('/uploadData', function (req, res) {
 				return res.status(500).send(err);
 			}else{
 				try{
-				var workbook = XLSX.readFile(newAddr);
-				var worksheet = workbook.Sheets[workbook.SheetNames[0]];
-				var cellCompanyFN = worksheet['A1'];
-				var cellVehicle = worksheet['A2'];
-				var cellStartDate = worksheet['A3'];
-				var cellEndDate = worksheet['A4'];
-				var vehicleCelVal = cellVehicle.v;
-				var vehicleNum = vehicleCelVal.substr(9,vehicleCelVal.length-1);
-				cellVehicle.v = "";
-				cellCompanyFN.v = "";
-				cellStartDate.v = "";
-				cellEndDate.v = "";
-				console.log(vehicleNum);
-				var cellDate = worksheet['A6'];
-				cellDate.v = "datetime";
-				var cellLat = worksheet['B6'];
-				cellLat.v = "lat";
-				var cellLon = worksheet['C6'];
-				cellLon.v = "lon";
-				var cellRoad = worksheet['D6'];
-				cellRoad.v = "roadname";
-				var cellSpeed = worksheet['E6'];
-				cellSpeed.v = "speed";
-				XLSX.writeFile(workbook,newAddr);
-				XLSX.utils.sheet_to_csv(worksheet);
-				var workbook = XLSX.readFile(newAddr);
-				var worksheet = workbook.Sheets[workbook.SheetNames[0]];
-				var output_file_name ="tmp/zomg_" + timestamp + ".csv";
-				var stream = XLSX.stream.to_csv(worksheet);
-				stream.pipe(fs.createWriteStream(output_file_name)).on('finish', function () {
-					console.log("Inserting data into database");
-					var comma = ",";
-					var enclose = '\'';
-					var escape = '\\';
-					var terminator = '\n';
-					var query = connection.query('LOAD DATA LOCAL INFILE ' + "'" + output_file_name + "'" + ' INTO TABLE `node` FIELDS TERMINATED BY ? ENCLOSED BY ? ESCAPED BY ? LINES TERMINATED BY ? IGNORE 6 LINES (@datetime, @lat, @lon, @roadname, @speed) SET `datetime` = STR_TO_DATE(@datetime,?),lat=@lat,lon=@lon,roadname=@roadname,speed=@speed,vehicle=?,company=?',[comma,enclose,escape,terminator,'%d/%m/%Y %H:%i',vehicleNum,company],function (error, results, fields) {
-						if (error) throw error;
-						errMsg = "Successfully uploaded data";
-						getUniqueVehiclesFromData(company);
-						var successStr = JSON.stringify(results[0]);
-						console.log("Session Err value = " +errMsg);
-						res.redirect('/upload'+ "?status=success" );
-						//res.end();
-						//res.end(JSON.stringify(results));
-					}); 
-					DEL(['tmp/*'], function (err, paths) {
-							console.log('Deleted files/folders:\n', paths.join('\n'));
-					});					
-				});
+					var workbook = XLSX.readFile(newAddr);
+					var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+					var cellCompanyFN = worksheet['A1'];
+					var cellVehicle = worksheet['A2'];
+					var cellStartDate = worksheet['A3'];
+					var cellEndDate = worksheet['A4'];
+					var vehicleCelVal = cellVehicle.v;
+					var vehicleNum = vehicleCelVal.substr(9,vehicleCelVal.length-1);
+					cellVehicle.v = "";
+					cellCompanyFN.v = "";
+					cellStartDate.v = "";
+					cellEndDate.v = "";
+					console.log(vehicleNum);
+					var cellDate = worksheet['A6'];
+					cellDate.v = "datetime";
+					var cellLat = worksheet['B6'];
+					cellLat.v = "lat";
+					var cellLon = worksheet['C6'];
+					cellLon.v = "lon";
+					var cellRoad = worksheet['D6'];
+					cellRoad.v = "roadname";
+					var cellSpeed = worksheet['E6'];
+					cellSpeed.v = "speed";
+					var startDateVal = cellStartDate.h;
+					var endDateVal = cellEndDate.h;
+					var startDateArr = startDateVal.trim().split(" ");
+					var endDateArr = endDateVal.trim().split(" ");;
+					var startDateStr = startDateArr[2].trim();
+					var endDateStr = endDateArr[2].trim();
+					var startDate = startDateStr.split("/").reverse().join("-");
+					var endDate = endDateStr.split("/").reverse().join("-");
+						XLSX.writeFile(workbook,newAddr);
+						XLSX.utils.sheet_to_csv(worksheet);
+						var workbook = XLSX.readFile(newAddr);
+						var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+						var output_file_name ="tmp/hpd_" + timestamp + ".csv";
+						var stream = XLSX.stream.to_csv(worksheet);
+							stream.pipe(fs.createWriteStream(output_file_name)).on('finish', function () {
+								console.log("Inserting data into database");
+								var comma = ",";
+								var enclose = '\'';
+								var escape = '\\';
+								var terminator = '\n';
+								checkDataReplication(startDate,endDate,vehicleNum,company,output_file_name).then(function(count,outputFileName) {
+								console.log("Count of replicated Data: " + count);
+								console.log("Output file name @fn " + outputFileName);
+								if(count<1){
+									var query = connection.query('LOAD DATA LOCAL INFILE ' + "'" + output_file_name + "'" + ' INTO TABLE `node` FIELDS TERMINATED BY ? ENCLOSED BY ? ESCAPED BY ? LINES TERMINATED BY ? IGNORE 6 LINES (@datetime, @lat, @lon, @roadname, @speed) SET `datetime` = STR_TO_DATE(@datetime,?),lat=@lat,lon=@lon,roadname=@roadname,speed=@speed,vehicle=?,company=?',[comma,enclose,escape,terminator,'%d/%m/%Y %H:%i',vehicleNum,company],function (error, results, fields) {
+										if (error) throw error;
+										errMsg = "Successfully uploaded data";
+										updateVehicleData(vehicleNum,company);
+										var successStr = JSON.stringify(results[0]);
+										console.log("Session Err value = " +errMsg);
+										res.redirect('/upload');
+										//res.end();
+										//res.end(JSON.stringify(results));
+									}); 						
+								}else{
+									errMsg = "This data already exists";
+									errType = "X";
+									res.redirect("/upload");
+								}
+								DEL(['tmp/*'], function (err, paths) {
+									console.log('Deleted files/folders:\n', paths.join('\n'));
+								});					
+							});
+					});
+					
 				}catch(error){
-					//res.json({ message: error.message });
+						//res.json({ message: error.message });
+					
 				}
 			}
 		});
@@ -1739,21 +1778,10 @@ app.get('/teams/', function (req, res) {
 }); */
 
 
-function getUniqueVehiclesFromData(company){
-	var vehicleNum = "";
-	connection.query('SELECT DISTINCT `vehicle` FROM node WHERE `vehicle` NOT IN (SELECT DISTINCT `plate_num` FROM vehicle) AND node.company=?',[company],function (error, results, fields) {
-		if (error) throw error;
-		if(results.length){
-			vehicleNum = results[0].vehicle;
-			updateVehicleData(vehicleNum,company);			
-		}
-
-	});
-}
-
 
 function updateVehicleData(vehicleNum,company){
-	connection.query('INSERT INTO vehicle SET `plate_num`=?,`company`=?',[vehicleNum,company], function (error, results, fields) {
+	var vehiclePlateNum = vehicleNum.substr(0,7);
+	connection.query('INSERT INTO vehicle (plate_num,company) SELECT * FROM (SELECT ?,?) AS tmp WHERE NOT EXISTS (SELECT plate_num,company FROM vehicle WHERE plate_num=? AND company=?) LIMIT 1',[vehiclePlateNum,company,vehiclePlateNum,company], function (error, results, fields) {
 		if (error) throw error;
 	});	
 }
@@ -1840,7 +1868,7 @@ app.post('/verifyLogin', function (req, res) {
 	username = req.body.username;
 	pwd = req.body.pwd;
 	errMsg = "";
-	errVerify = "";
+	errType = "";
 	connection.query('SELECT * FROM user WHERE `username`=?' , [username], function (error, results, fields) {
 		if (error) throw error;
 		if(results[0] != null){
